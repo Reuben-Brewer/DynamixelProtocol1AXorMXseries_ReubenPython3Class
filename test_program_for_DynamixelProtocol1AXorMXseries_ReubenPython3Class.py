@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision G, 07/31/2024
+Software Revision H, 08/17/2024
 
 Verified working on: Python 3.8 for Windows 10/11 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -466,6 +466,9 @@ if __name__ == '__main__':
 
     global USE_SINUSOIDAL_POS_CONTROL_INPUT_FLAG
     USE_SINUSOIDAL_POS_CONTROL_INPUT_FLAG = 1 #unicorn
+    
+    global MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+    MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode = 4.0
     ##########################################################################################################
     ##########################################################################################################
     ##########################################################################################################
@@ -551,16 +554,16 @@ if __name__ == '__main__':
     GUI_RootAfterCallbackInterval_Milliseconds = 30
 
     global SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle
-    SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle = 3.0
+    SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle = 10.0
 
     global SINUSOIDAL_MOTION_INPUT_MinValue
-    SINUSOIDAL_MOTION_INPUT_MinValue = 0.0
+    SINUSOIDAL_MOTION_INPUT_MinValue = -360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
 
     global SINUSOIDAL_MOTION_INPUT_MaxValue
-    SINUSOIDAL_MOTION_INPUT_MaxValue = 180.0
+    SINUSOIDAL_MOTION_INPUT_MaxValue = 360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
 
-    global SINUSOIDAL_MOTION_INPUT_MotorID
-    SINUSOIDAL_MOTION_INPUT_MotorID = 0
+    global SINUSOIDAL_MOTION_INPUT_MotorID_List
+    SINUSOIDAL_MOTION_INPUT_MotorID_List = [0, 1]
     ##########################################################################################################
     ##########################################################################################################
     ##########################################################################################################
@@ -667,10 +670,10 @@ if __name__ == '__main__':
                                     ("GUI_PADY", GUI_PADY_DynamixelProtocol1AXorMXseries),
                                     ("GUI_ROWSPAN", GUI_ROWSPAN_DynamixelProtocol1AXorMXseries),
                                     ("GUI_COLUMNSPAN", GUI_COLUMNSPAN_DynamixelProtocol1AXorMXseries)])
-    
+
     global DynamixelProtocol1AXorMXseries_setup_dict
     DynamixelProtocol1AXorMXseries_setup_dict = dict([("GUIparametersDict", DynamixelProtocol1AXorMXseries_GUIparametersDict),
-                                                    ("DesiredSerialNumber_USBtoSerialConverter", "FT5O0I2VA"),  #Sangeet = FT3M9STOA
+                                                    ("DesiredSerialNumber_USBtoSerialConverter", "FT94VSKV"),
                                                     ("NameToDisplay_UserSet", "My U2D2"),
                                                     ("SerialBaudRate", 1000000),
                                                     ("SerialTxBufferSize", 64),
@@ -680,16 +683,17 @@ if __name__ == '__main__':
                                                     ("ENABLE_GETS", 1),
                                                     ("AskForInfrequentDataReadLoopCounterLimit", 200),
                                                     ("MainThread_TimeToSleepEachLoop", 0.010),
-                                                    ("MotorType_StringList", ["AX", "AX"]), #AX, MX
-                                                    ("Position_DynamixelUnits_Min_UserSet", [0.0, 0.0]),
-                                                    ("Position_DynamixelUnits_Max_UserSet", [1023.0, 1023.0]), #1023 for AX-series, 4095 for MX-series
+                                                    ("MotorType_StringList", ["MX", "MX"]), #AX, MX
+                                                    ("Position_DynamixelUnits_Min_UserSet", [-4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode, -4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]),
+                                                    ("Position_DynamixelUnits_Max_UserSet", [4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode, 4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]), #1023 for AX-series, 4095 for MX-series
                                                     ("Position_DynamixelUnits_StartingValueList", [0.0, 0.0]),
                                                     ("Speed_DynamixelUnits_Min_UserSet", [-1023.0, -1023.0]),
                                                     ("Speed_DynamixelUnits_Max_UserSet", [1023.0, 1023.0]),
                                                     ("Speed_DynamixelUnits_StartingValueList", [1023.0, 1023.0]),
-                                                    ("MaxTorque_DynamixelUnits_StartingValueList", [1023.0, 1023.0])])
-                                                    #("CWlimit_StartingValueList",  [0.0, 0.0]),
-                                                    #("CCWlimit_StartingValueList",  [1023.0, 1023.0])])
+                                                    ("MaxTorque_DynamixelUnits_StartingValueList", [1023.0, 1023.0]),
+                                                    ("CWlimit_StartingValueList",  [4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode, 4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]),
+                                                    ("CCWlimit_StartingValueList",  [-4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode, -4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]),
+                                                    ("MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode", MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode)])
 
     if USE_DynamixelProtocol1AXorMXseries_FLAG == 1:
         try:
@@ -868,11 +872,13 @@ if __name__ == '__main__':
             SINUSOIDAL_INPUT_TO_COMMAND = (SINUSOIDAL_MOTION_INPUT_MaxValue + SINUSOIDAL_MOTION_INPUT_MinValue) / 2.0 + 0.5 * abs(SINUSOIDAL_MOTION_INPUT_MaxValue - SINUSOIDAL_MOTION_INPUT_MinValue) * math.sin(time_gain * CurrentTime_MainLoopThread)
             #print("SINUSOIDAL_INPUT_TO_COMMAND: " + str(SINUSOIDAL_INPUT_TO_COMMAND))
 
-            DynamixelProtocol1AXorMXseries_Object.SetPosition_FROM_EXTERNAL_PROGRAM(SINUSOIDAL_MOTION_INPUT_MotorID, SINUSOIDAL_INPUT_TO_COMMAND, "deg")
+            for MotorID in SINUSOIDAL_MOTION_INPUT_MotorID_List:
+                DynamixelProtocol1AXorMXseries_Object.SetPosition_FROM_EXTERNAL_PROGRAM(MotorID, SINUSOIDAL_INPUT_TO_COMMAND, "deg")
 
             LED_ToggleCounter = LED_ToggleCounter + 1
             if LED_ToggleCounter == 100:
-                DynamixelProtocol1AXorMXseries_Object.ToggleLEDstate_FROM_EXTERNAL_PROGRAM(SINUSOIDAL_MOTION_INPUT_MotorID)
+                for MotorID in SINUSOIDAL_MOTION_INPUT_MotorID_List:
+                    DynamixelProtocol1AXorMXseries_Object.ToggleLEDstate_FROM_EXTERNAL_PROGRAM(MotorID)
                 LED_ToggleCounter = 0
 
         ##########################################################################################################

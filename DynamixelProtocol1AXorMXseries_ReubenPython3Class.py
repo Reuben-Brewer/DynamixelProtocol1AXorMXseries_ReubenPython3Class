@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision G, 07/31/2024
+Software Revision H, 08/17/2024
 
 Verified working on: Python 3.8 for Windows 10/11 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -416,6 +416,18 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
 
         #########################################################
         #########################################################
+        if "MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode" in setup_dict:
+            self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode", setup_dict["MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode"], 1.0, 28.0)
+
+        else:
+            self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode = 1.0
+
+        print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode: " + str(self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode))
+        #########################################################
+        #########################################################
+
+        #########################################################
+        #########################################################
         self.MotorType_AcceptableDict = dict([("None", dict([("MotorType_DynamixelInteger", -1)])),
                                                      ("NONE", dict([("MotorType_DynamixelInteger", -1)])),
                                                      ("AX", dict([("MotorType_DynamixelInteger", 0)])),
@@ -466,13 +478,13 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             self.ConversionFactorFromDegreesToDynamixel_Units = 1.0/self.ConversionFactorFromDynamixelUnitsToDegrees
 
         elif self.MotorType_StringList[0] == "MX":
-            self.Position_DynamixelUnits_Max_FWlimit = 4095.0
-            self.Position_DynamixelUnits_Min_FWlimit = 0.0
+            self.Position_DynamixelUnits_Max_FWlimit = 4095.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+            self.Position_DynamixelUnits_Min_FWlimit = -4095.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
 
             self.Speed_DynamixelUnits_Max_FWlimit = 1023.0 #Should this be 2047 for velocity mode?
             self.Speed_DynamixelUnits_Min_FWlimit = 0.0 #1.0
 
-            self.ConversionFactorFromDynamixelUnitsToDegrees = 360.0/self.Position_DynamixelUnits_Max_FWlimit
+            self.ConversionFactorFromDynamixelUnitsToDegrees = 360.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode/self.Position_DynamixelUnits_Max_FWlimit
             self.ConversionFactorFromDegreesToDynamixel_Units = 1.0 / self.ConversionFactorFromDynamixelUnitsToDegrees
 
         else:
