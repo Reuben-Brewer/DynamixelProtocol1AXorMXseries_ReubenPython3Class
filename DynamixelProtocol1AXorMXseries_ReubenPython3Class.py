@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision H, 08/17/2024
+Software Revision I, 09/07/2024
 
 Verified working on: Python 3.8 for Windows 10/11 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -99,6 +99,26 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
 
         self.PositionUnitsAcceptableList = ["NONE", "REV", "DEG", "RAD", "PERCENT"]
         self.SpeedUnitsAcceptableList = ["NONE", "PERCENT"]
+
+        self.ConversionFactorFromDynamixelUnitsToDegrees = []
+        self.ConversionFactorFromDegreesToDynamixel_Units = []
+
+        self.Position_DynamixelUnits_StartingValueList = []
+
+        self.Position_DynamixelUnits_Max_UserSet = []
+        self.Position_DynamixelUnits_Min_UserSet = []
+
+        self.Position_DynamixelUnits_Max_FWlimit = []
+        self.Position_DynamixelUnits_Min_FWlimit = []
+
+        self.Speed_DynamixelUnits_StartingValueList = []
+        self.Speed_DynamixelUnits_StartingValueList = []
+
+        self.Speed_DynamixelUnits_Max_UserSet = []
+        self.Speed_DynamixelUnits_Min_UserSet = []
+
+        self.Speed_DynamixelUnits_Max_FWlimit = []
+        self.Speed_DynamixelUnits_Min_FWlimit = []
 
         #########################################################
         #########################################################
@@ -324,7 +344,7 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         #########################################################
         #########################################################
         if "SerialBaudRate" in setup_dict:
-            self.SerialBaudRate = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("SerialBaudRate", setup_dict["SerialBaudRate"], 9600, 4500000))
+            self.SerialBaudRate = int(self.PassThroughFloatValuesInRange_ExitProgramOtherwise("SerialBaudRate", setup_dict["SerialBaudRate"], 9600, 1000000))
 
         else:
             self.SerialBaudRate = 1000000
@@ -426,6 +446,34 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         #########################################################
         #########################################################
 
+        ######################################################### UNICORN
+        #########################################################
+
+        #########################################################
+        self.Position_DynamixelUnits_Max_FWlimit_AX = 1023.0
+        self.Position_DynamixelUnits_Min_FWlimit_AX = 0.0
+
+        self.Speed_DynamixelUnits_Max_FWlimit_AX = 1023.0
+        self.Speed_DynamixelUnits_Min_FWlimit_AX = -1023.0  # 1.0
+
+        self.ConversionFactorFromDynamixelUnitsToDegrees_AX = 300.0 / self.Position_DynamixelUnits_Max_FWlimit_AX
+        self.ConversionFactorFromDegreesToDynamixel_Units_AX = 1.0 / self.ConversionFactorFromDynamixelUnitsToDegrees_AX
+        #########################################################
+
+        #########################################################
+        self.Position_DynamixelUnits_Max_FWlimit_MX = 4095.0 * self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+        self.Position_DynamixelUnits_Min_FWlimit_MX = -4095.0 * self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+
+        self.Speed_DynamixelUnits_Max_FWlimit_MX = 1023.0  # Should this be 2047 for velocity mode?
+        self.Speed_DynamixelUnits_Min_FWlimit_MX = -1023.0  # 1.0
+
+        self.ConversionFactorFromDynamixelUnitsToDegrees_MX = 360.0 * self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode / self.Position_DynamixelUnits_Max_FWlimit_MX
+        self.ConversionFactorFromDegreesToDynamixel_Units_MX = 1.0 / self.ConversionFactorFromDynamixelUnitsToDegrees_MX
+        #########################################################
+
+        #########################################################
+        #########################################################
+        
         #########################################################
         #########################################################
         self.MotorType_AcceptableDict = dict([("None", dict([("MotorType_DynamixelInteger", -1)])),
@@ -448,54 +496,39 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                     servo_type_dict_temp = self.MotorType_AcceptableDict[MotorType_element]
                     self.MotorType_DynamixelIntegerList.append(servo_type_dict_temp["MotorType_DynamixelInteger"])
 
+                    if MotorType_element == "MX":
+                        self.Position_DynamixelUnits_Max_FWlimit.append(self.Position_DynamixelUnits_Max_FWlimit_MX)
+                        self.Position_DynamixelUnits_Min_FWlimit.append(self.Position_DynamixelUnits_Min_FWlimit_MX)
+                        self.Speed_DynamixelUnits_Max_FWlimit.append(self.Speed_DynamixelUnits_Max_FWlimit_MX)
+                        self.Speed_DynamixelUnits_Min_FWlimit.append(self.Speed_DynamixelUnits_Min_FWlimit_MX)
+                        self.ConversionFactorFromDynamixelUnitsToDegrees.append(self.ConversionFactorFromDynamixelUnitsToDegrees_MX)
+                        self.ConversionFactorFromDegreesToDynamixel_Units.append(self.ConversionFactorFromDegreesToDynamixel_Units_MX)
+                    else:
+                        self.Position_DynamixelUnits_Max_FWlimit.append(self.Position_DynamixelUnits_Max_FWlimit_AX)
+                        self.Position_DynamixelUnits_Min_FWlimit.append(self.Position_DynamixelUnits_Min_FWlimit_AX)
+                        self.Speed_DynamixelUnits_Max_FWlimit.append(self.Speed_DynamixelUnits_Max_FWlimit_AX)
+                        self.Speed_DynamixelUnits_Min_FWlimit.append(self.Speed_DynamixelUnits_Min_FWlimit_AX)
+                        self.ConversionFactorFromDynamixelUnitsToDegrees.append(self.ConversionFactorFromDynamixelUnitsToDegrees_AX)
+                        self.ConversionFactorFromDegreesToDynamixel_Units.append(self.ConversionFactorFromDegreesToDynamixel_Units_AX)
+
         self.NumberOfMotors = len(setup_dict["MotorType_StringList"])
 
         if self.NumberOfMotors == 0:
             print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Error, 'MotorType_StringList' argument must be a list of length >= 1.")
             return
         else:
+            pass
+
+            '''
             for element in self.MotorType_DynamixelIntegerList:
                 if element != self.MotorType_DynamixelIntegerList[0]:
                     print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Error, all elements in the list 'MotorType_StringList' must be the same type")
                     return
+            '''
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: NumberOfMotors: " + str(self.NumberOfMotors))
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: MotorType_StringList: " + str(self.MotorType_StringList))
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: MotorType_DynamixelIntegerList: " + str(self.MotorType_DynamixelIntegerList))
-        #########################################################
-        #########################################################
-
-        #########################################################
-        #########################################################
-        if self.MotorType_StringList[0] == "AX":
-            self.Position_DynamixelUnits_Max_FWlimit = 1023.0
-            self.Position_DynamixelUnits_Min_FWlimit = 0.0
-
-            self.Speed_DynamixelUnits_Max_FWlimit = 1023.0
-            self.Speed_DynamixelUnits_Min_FWlimit = 0.0 #1.0
-
-            self.ConversionFactorFromDynamixelUnitsToDegrees = 300.0/self.Position_DynamixelUnits_Max_FWlimit
-            self.ConversionFactorFromDegreesToDynamixel_Units = 1.0/self.ConversionFactorFromDynamixelUnitsToDegrees
-
-        elif self.MotorType_StringList[0] == "MX":
-            self.Position_DynamixelUnits_Max_FWlimit = 4095.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
-            self.Position_DynamixelUnits_Min_FWlimit = -4095.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
-
-            self.Speed_DynamixelUnits_Max_FWlimit = 1023.0 #Should this be 2047 for velocity mode?
-            self.Speed_DynamixelUnits_Min_FWlimit = 0.0 #1.0
-
-            self.ConversionFactorFromDynamixelUnitsToDegrees = 360.0*self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode/self.Position_DynamixelUnits_Max_FWlimit
-            self.ConversionFactorFromDegreesToDynamixel_Units = 1.0 / self.ConversionFactorFromDynamixelUnitsToDegrees
-
-        else:
-            self.Position_DynamixelUnits_Max_FWlimit = 1023.0
-            self.Position_DynamixelUnits_Min_FWlimit = 0.0
-
-            self.Speed_DynamixelUnits_Max_FWlimit = 1023.0
-            self.Speed_DynamixelUnits_Min_FWlimit = 0.0
-
-            self.ConversionFactorFromDynamixelUnitsToDegrees = 1.0
-            self.ConversionFactorFromDegreesToDynamixel_Units = 1.0 / self.ConversionFactorFromDynamixelUnitsToDegrees
         #########################################################
         #########################################################
 
@@ -506,7 +539,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Position_DynamixelUnits_StartingValueList = []
             temp_list = setup_dict["Position_DynamixelUnits_StartingValueList"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -516,9 +548,10 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit, self.Position_DynamixelUnits_Max_FWlimit)
+
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit[index], self.Position_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Position_DynamixelUnits_StartingValueList.append(element)
@@ -530,7 +563,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Position_DynamixelUnits_StartingValueList = [(self.Position_DynamixelUnits_Max_FWlimit + self.Position_DynamixelUnits_Min_FWlimit)/2.0] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Position_DynamixelUnits_StartingValueList.append((self.Position_DynamixelUnits_Max_FWlimit[index] + self.Position_DynamixelUnits_Min_FWlimit[index])/2.0)
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Position_DynamixelUnits_StartingValueList valid: " + str(self.Position_DynamixelUnits_StartingValueList))
         #########################################################
@@ -544,7 +579,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Position_DynamixelUnits_Max_UserSet = []
             temp_list = setup_dict["Position_DynamixelUnits_Max_UserSet"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -554,9 +588,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_Max_UserSet_element", element, self.Position_DynamixelUnits_Min_FWlimit, self.Position_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_Max_UserSet_element", element, self.Position_DynamixelUnits_Min_FWlimit[index], self.Position_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Position_DynamixelUnits_Max_UserSet.append(element)
@@ -568,7 +602,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Position_DynamixelUnits_Max_UserSet = [self.Position_DynamixelUnits_Max_FWlimit] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Position_DynamixelUnits_Max_UserSet.append(self.Position_DynamixelUnits_Max_FWlimit[index])
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Position_DynamixelUnits_Max_UserSet valid: " + str(self.Position_DynamixelUnits_Max_UserSet))
         #########################################################
@@ -582,7 +618,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Position_DynamixelUnits_Min_UserSet = []
             temp_list = setup_dict["Position_DynamixelUnits_Min_UserSet"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -592,9 +627,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_Min_UserSet_element", element, self.Position_DynamixelUnits_Min_FWlimit, self.Position_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Position_DynamixelUnits_Min_UserSet_element", element, self.Position_DynamixelUnits_Min_FWlimit[index], self.Position_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Position_DynamixelUnits_Min_UserSet.append(element)
@@ -606,7 +641,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Position_DynamixelUnits_Min_UserSet = [self.Position_DynamixelUnits_Min_FWlimit] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Position_DynamixelUnits_Min_UserSet.append(self.Position_DynamixelUnits_Min_FWlimit[index])
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Position_DynamixelUnits_Min_UserSet valid: " + str(self.Position_DynamixelUnits_Min_UserSet))
         #########################################################
@@ -620,7 +657,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Speed_DynamixelUnits_StartingValueList = []
             temp_list = setup_dict["Speed_DynamixelUnits_StartingValueList"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -630,9 +666,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_StartingValueList_element", element, self.Speed_DynamixelUnits_Min_FWlimit, self.Speed_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_StartingValueList_element", element, self.Speed_DynamixelUnits_Min_FWlimit[index], self.Speed_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Speed_DynamixelUnits_StartingValueList.append(element)
@@ -644,7 +680,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Speed_DynamixelUnits_StartingValueList = [(self.Speed_DynamixelUnits_Max_FWlimit + self.Speed_DynamixelUnits_Min_FWlimit)/2.0] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Speed_DynamixelUnits_StartingValueList.append((self.Speed_DynamixelUnits_Max_FWlimit[index] + self.Speed_DynamixelUnits_Min_FWlimit[index])/2.0)
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Speed_DynamixelUnits_StartingValueList valid: " + str(self.Speed_DynamixelUnits_StartingValueList))
         #########################################################
@@ -658,7 +696,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Speed_DynamixelUnits_Max_UserSet = []
             temp_list = setup_dict["Speed_DynamixelUnits_Max_UserSet"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -668,9 +705,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_Max_UserSet_element", element, self.Speed_DynamixelUnits_Min_FWlimit, self.Speed_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_Max_UserSet_element", element, self.Speed_DynamixelUnits_Min_FWlimit[index], self.Speed_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Speed_DynamixelUnits_Max_UserSet.append(element)
@@ -682,7 +719,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Speed_DynamixelUnits_Max_UserSet = [self.Speed_DynamixelUnits_Max_FWlimit] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Speed_DynamixelUnits_Max_UserSet.append(self.Speed_DynamixelUnits_Max_FWlimit[index])
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Speed_DynamixelUnits_Max_UserSet valid: " + str(self.Speed_DynamixelUnits_Max_UserSet))
         #########################################################
@@ -696,7 +735,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             
             #########################################################
             #########################################################
-            self.Speed_DynamixelUnits_Min_UserSet = []
             temp_list = setup_dict["Speed_DynamixelUnits_Min_UserSet"]
 
             if len(temp_list) != self.NumberOfMotors:
@@ -706,9 +744,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_Min_UserSet_element", element, -1.0*self.Speed_DynamixelUnits_Max_FWlimit, -1.0*self.Speed_DynamixelUnits_Min_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("Speed_DynamixelUnits_Min_UserSet_element", element, self.Speed_DynamixelUnits_Min_FWlimit[index], self.Speed_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.Speed_DynamixelUnits_Min_UserSet.append(element)
@@ -720,7 +758,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
             #########################################################
 
         else:
-            self.Speed_DynamixelUnits_Min_UserSet = [-1.0*self.Speed_DynamixelUnits_Max_FWlimit] * self.NumberOfMotors
+
+            for index in range(0, self.NumberOfMotors):
+                self.Speed_DynamixelUnits_Min_UserSet.append(-1.0*self.Speed_DynamixelUnits_Max_FWlimit[index])
 
         print("DynamixelProtocol1AXorMXseries_ReubenPython3Class __init__: Speed_DynamixelUnits_Min_UserSet valid: " + str(self.Speed_DynamixelUnits_Min_UserSet))
         #########################################################
@@ -744,7 +784,7 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
                 element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("MaxTorque_DynamixelUnits_StartingValueList_element", element, 0.0, 1023.0)
 
@@ -782,9 +822,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("CWlimit_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit, self.Position_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("CWlimit_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit[index], self.Position_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.CWlimit_StartingValueList.append(element)
@@ -820,9 +860,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 #########################################################
-                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("CCWlimit_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit, self.Position_DynamixelUnits_Max_FWlimit)
+                element = self.PassThroughFloatValuesInRange_ExitProgramOtherwise("CCWlimit_StartingValueList_element", element, self.Position_DynamixelUnits_Min_FWlimit[index], self.Position_DynamixelUnits_Max_FWlimit[index])
 
                 if element != -11111.0:
                     self.CCWlimit_StartingValueList.append(element)
@@ -858,7 +898,7 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                       str(self.NumberOfMotors) + ").")
                 return
 
-            for element in temp_list:
+            for index, element in enumerate(temp_list):
                 
                 #########################################################
                 element = self.PassThrough0and1values_ExitProgramOtherwise("ContinuousRotationState_StartingValueList_element", element)
@@ -1550,7 +1590,7 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         elif Units == "RAD":
             PositionFromExternalProgram_ConvertedToDeg = PositionFromExternalProgram*360.0/(2*math.pi)
 
-        PositionFromExternalProgram_DynamixelUnits_unlimited = PositionFromExternalProgram_ConvertedToDeg*self.ConversionFactorFromDegreesToDynamixel_Units
+        PositionFromExternalProgram_DynamixelUnits_unlimited = PositionFromExternalProgram_ConvertedToDeg*self.ConversionFactorFromDegreesToDynamixel_Units[MotorIndex]
 
         if Units == "PERCENT":
             PositionFromExternalProgram = self.LimitNumber_FloatOutputOnly(0.0, 100.0, PositionFromExternalProgram) #To limit the input to [0,100]%
@@ -1907,6 +1947,9 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         Instruction = 0x03
         PortRegister = 0x1E
 
+        #if Position_limited < 0:
+        #    Position_limited = self.ComputeTwosComplement(Position_limited) #NOT NEEDED
+
         Position_limited = int(self.LimitNumber_FloatOutputOnly(self.Position_DynamixelUnits_Min_UserSet[MotorID], self.Position_DynamixelUnits_Max_UserSet[MotorID], Position))
         Position_limited_BYTES_LIST = self.shortIntegerToBytes(Position_limited)
         Position_limited_LOW_BYTE = Position_limited_BYTES_LIST[0]
@@ -1918,7 +1961,7 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         Speed_limited_HIGH_BYTE = Speed_limited_BYTES_LIST[1]
 
         if Speed < 0:
-            Speed_limited_HIGH_BYTE = Speed_limited_BYTES_LIST[1] | 0b00000100 #To set negative bit high
+            Speed_limited_HIGH_BYTE = Speed_limited_BYTES_LIST[1] | 0b00000100 #To set negative bit high #THIS WORKS FOR AX, BUT DOES IT WORK FOR MX unicorn
 
         Checksum = (MotorID + Length + Instruction + PortRegister + Position_limited_LOW_BYTE + Position_limited_HIGH_BYTE + Speed_limited_LOW_BYTE + Speed_limited_HIGH_BYTE)
         Checksum = ~Checksum
@@ -2099,6 +2142,20 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                 self.ErrorFlagStates_DictEnglishNameAsKey[EnglishName] = ErrorByteToIntrepret & (1 << BitNumber)
         ##########################################################################################################
 
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    def ConvertUnsignedToSignedInteger(self, IntegerToBeConverted, NumberOfBytesComposingInteger):
+        return int.from_bytes(IntegerToBeConverted.to_bytes(NumberOfBytesComposingInteger, 'little', signed=False), 'little', signed=True)
+    ##########################################################################################################
+    ##########################################################################################################
+
+    ##########################################################################################################
+    ##########################################################################################################
+    def ConvertSignedToUnsignedInteger(self, IntegerToBeConverted, NumberOfBytesComposingInteger):
+        return int.from_bytes(IntegerToBeConverted.to_bytes(NumberOfBytesComposingInteger, 'little', signed=True), 'little', signed=False)
     ##########################################################################################################
     ##########################################################################################################
 
@@ -2358,19 +2415,35 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                 ##########################################################################################################
 
                 ##########################################################################################################
-                if VariableName == "Position" or VariableName == "GoalPosition" or VariableName == "ModelNumber" or VariableName == "CWangleLimit" or VariableName == "CCWangleLimit":
+                if VariableName == "Position" or VariableName == "GoalPosition" or VariableName == "CWangleLimit" or VariableName == "CCWangleLimit":
+
                     Data_Low_BYTE = SerialMessage_Received[5]
                     Data_High_BYTE = SerialMessage_Received[6]
 
                     Data_Value = Data_Low_BYTE|(Data_High_BYTE<<8)
+
+                    if self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode > 1.0 and self.MotorType_StringList[MotorID] == "MX":
+                        #print("MotorID " + str(MotorID) + " is using 2's complement.")
+                        Data_Value = self.ConvertUnsignedToSignedInteger(Data_Value, 2) #Handles the two's complement
+
+                ##########################################################################################################
+
+                ##########################################################################################################
+                elif VariableName == "ModelNumber":
+
+                    Data_Low_BYTE = SerialMessage_Received[5]
+                    Data_High_BYTE = SerialMessage_Received[6]
+
+                    Data_Value = Data_Low_BYTE|(Data_High_BYTE<<8)
+
                 ##########################################################################################################
 
                 ##########################################################################################################
                 elif VariableName == "Speed" or VariableName == "Torque":
                     Data_Low_BYTE = SerialMessage_Received[5]
-                    Data_High_BYTE = SerialMessage_Received[6] & 0b0000011
+                    Data_High_BYTE = SerialMessage_Received[6] & 0b0000011 #Why aren't there 8 bits here (only 7 shown)? 09/07/2024
 
-                    Data_Sign_unscaled = (SerialMessage_Received[6] & 0b11111100)
+                    Data_Sign_unscaled = (SerialMessage_Received[6] & 0b11111100) #Why aren't there 8 bits here (only 7 shown)? 09/07/2024
                     if Data_Sign_unscaled != 0:
                         Data_Sign = -1
                     else:
@@ -2408,6 +2481,10 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                     Position_Low_BYTE = SerialMessage_Received[5]
                     Position_High_BYTE = SerialMessage_Received[6]
                     Position_Value_DynamixelUnits = (Position_Low_BYTE | (Position_High_BYTE << 8))
+
+                    if self.MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode > 1.0 and self.MotorType_StringList[MotorID] == "MX":
+                        #print("MotorID " + str(MotorID) + " is using 2's complement.")
+                        Position_Value_DynamixelUnits = self.ConvertUnsignedToSignedInteger(Position_Value_DynamixelUnits, 2) #Handles the two's complement
 
                     Speed_Low_BYTE = SerialMessage_Received[7]
                     Speed_High_BYTE = SerialMessage_Received[8] & 0b0000011
@@ -2457,8 +2534,8 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         except:
             exceptions = sys.exc_info()[0]
             print("ReadVariable, exceptions: %s" % exceptions)
+            traceback.print_exc()
             return ReturnValueForError
-            #traceback.print_exc()
 
         ##########################################################################################################
         ##########################################################################################################
@@ -2559,16 +2636,17 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
                     for MotorIndex in range(0, self.NumberOfMotors):
                         [self.PositionReceived_DynamixelUnits[MotorIndex], self.SpeedReceived_DynamixelUnits[MotorIndex]] = self.ReadVariable(MotorIndex, "PositionAndSpeed")
 
-                        #self.GoalPositionReceived[MotorIndex] = self.ReadVariable(MotorIndex, "GoalPosition")
-                        #time.sleep(self.TimeBetweenCommands)
                         #self.PositionReceived_DynamixelUnits[MotorIndex] = self.ReadVariable(MotorIndex, "Position")
                         #time.sleep(self.TimeBetweenCommands)
                         #self.SpeedReceived_DynamixelUnits[MotorIndex] = self.ReadVariable(MotorIndex, "Speed")
                         #time.sleep(self.TimeBetweenCommands)
 
-                        #self.GoalPositionReceived_Degrees[MotorIndex] = self.GoalPositionReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees
-                        self.PositionReceived_Degrees[MotorIndex] = self.PositionReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees
-                        self.SpeedReceived_DegreesPerSecond[MotorIndex] = self.SpeedReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees
+                        #self.GoalPositionReceived[MotorIndex] = self.ReadVariable(MotorIndex, "GoalPosition")
+                        #time.sleep(self.TimeBetweenCommands)
+
+                        #self.GoalPositionReceived_Degrees[MotorIndex] = self.GoalPositionReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees[MotorIndex]
+                        self.PositionReceived_Degrees[MotorIndex] = self.PositionReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees[MotorIndex]
+                        self.SpeedReceived_DegreesPerSecond[MotorIndex] = self.SpeedReceived_DynamixelUnits[MotorIndex]*self.ConversionFactorFromDynamixelUnitsToDegrees[MotorIndex]
 
                         self.TorqueReceived_DynamixelUnits[MotorIndex] = self.ReadVariable(MotorIndex, "Torque")
                         time.sleep(self.TimeBetweenCommands)
