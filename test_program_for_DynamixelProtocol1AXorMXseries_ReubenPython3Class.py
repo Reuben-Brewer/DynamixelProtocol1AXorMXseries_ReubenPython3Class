@@ -585,7 +585,7 @@ if __name__ == '__main__':
     '''
 
     #''' #Example for 2 MX motors
-    NumberOfMotors = 2
+    NumberOfMotors = 1
     MotorType_StringList = ["MX"]*NumberOfMotors
     Position_DynamixelUnits_Min_UserSet = [-4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
     Position_DynamixelUnits_Max_UserSet = [4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
