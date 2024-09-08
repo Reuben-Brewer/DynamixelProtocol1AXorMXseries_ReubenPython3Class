@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision I, 09/07/2024
+Software Revision J, 09/08/2024
 
 Verified working on: Python 3.8 for Windows 10/11 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -92,10 +92,6 @@ class DynamixelProtocol1AXorMXseries_ReubenPython3Class(Frame): #Subclass the Tk
         self.ResetSerialConnection_EventNeedsToBeFiredFlag = 0
 
         self.TimeBetweenCommands = 0.001
-
-        self.ControlType = "Position"
-        self.ControlType_NEEDS_TO_BE_CHANGED_FLAG = 0
-        self.ControlType_GUI_NEEDS_TO_BE_CHANGED_FLAG = 0
 
         self.PositionUnitsAcceptableList = ["NONE", "REV", "DEG", "RAD", "PERCENT"]
         self.SpeedUnitsAcceptableList = ["NONE", "PERCENT"]

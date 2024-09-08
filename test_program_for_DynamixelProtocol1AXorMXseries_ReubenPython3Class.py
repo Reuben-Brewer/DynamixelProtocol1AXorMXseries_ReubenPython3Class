@@ -6,7 +6,7 @@ reuben.brewer@gmail.com
 www.reubotics.com
 
 Apache 2 License
-Software Revision I, 09/07/2024
+Software Revision J, 09/08/2024
 
 Verified working on: Python 3.8 for Windows 10/11 64-bit and Raspberry Pi Buster (no Mac testing yet).
 '''
@@ -554,13 +554,13 @@ if __name__ == '__main__':
     GUI_RootAfterCallbackInterval_Milliseconds = 30
 
     global SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle
-    SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle = 10.0
+    SINUSOIDAL_MOTION_INPUT_ROMtestTimeToPeakAngle = 15.0
 
     global SINUSOIDAL_MOTION_INPUT_MinValue_1
-    SINUSOIDAL_MOTION_INPUT_MinValue_1 = -360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+    SINUSOIDAL_MOTION_INPUT_MinValue_1 = -0.0
 
     global SINUSOIDAL_MOTION_INPUT_MaxValue_1
-    SINUSOIDAL_MOTION_INPUT_MaxValue_1 = 360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
+    SINUSOIDAL_MOTION_INPUT_MaxValue_1 = 300.0
 
     global SINUSOIDAL_MOTION_INPUT_MinValue_2
     SINUSOIDAL_MOTION_INPUT_MinValue_2 = -360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
@@ -569,14 +569,14 @@ if __name__ == '__main__':
     SINUSOIDAL_MOTION_INPUT_MaxValue_2 = 360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
 
 
-    ''' #Reuben Example with 1 AX + 1 MX motor
+    '''#Reuben Example with 1 AX (ID 0) + 1 MX (ID 1) motor
     MotorType_StringList = ["AX", "MX"]
     Position_DynamixelUnits_Min_UserSet = [0.0, -4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
-    Position_DynamixelUnits_Max_UserSet = [1023.0,4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
+    Position_DynamixelUnits_Max_UserSet = [1023.0, 4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
     Position_DynamixelUnits_StartingValueList = [0.0, 0.0]
-    Speed_DynamixelUnits_Min_UserSet = [-1023.0, -1023.0]
-    Speed_DynamixelUnits_Max_UserSet = [1023.0, 1023.0]
-    Speed_DynamixelUnits_StartingValueList = [1023.0, 1023.0]
+    Speed_DynamixelUnits_Min_UserSet = [-511.5, -511.5]
+    Speed_DynamixelUnits_Max_UserSet = [511.5, 511.5]
+    Speed_DynamixelUnits_StartingValueList = [511.5, 511.5]
     MaxTorque_DynamixelUnits_StartingValueList = [1023.0, 1023.0]
     CWlimit_StartingValueList = [0.0, 4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
     CCWlimit_StartingValueList = [1023.0, -4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
@@ -584,7 +584,7 @@ if __name__ == '__main__':
     '''
 
     #''' #Example for 2 MX motors
-    NumberOfMotors = 1
+    NumberOfMotors = 2
     MotorType_StringList = ["MX"]*NumberOfMotors
     Position_DynamixelUnits_Min_UserSet = [-4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
     Position_DynamixelUnits_Max_UserSet = [4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
@@ -936,7 +936,7 @@ if __name__ == '__main__':
 
                     if MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject_MostRecentDict_StandAlonePlottingProcess_ReadyForWritingFlag == 1:
                         if CurrentTime_MainLoopThread - LastTime_MainLoopThread_PLOTTER >= 0.030:
-                            MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject.ExternalAddPointOrListOfPointsToPlot(["Channel0"], [CurrentTime_MainLoopThread]*1, [DynamixelProtocol1AXorMXseries_MostRecentDict_PositionReceived_Degrees[0]])
+                            MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject.ExternalAddPointOrListOfPointsToPlot(["Channel0"], [CurrentTime_MainLoopThread]*1, [DynamixelProtocol1AXorMXseries_MostRecentDict_PositionReceived_Degrees[1]])
                             LastTime_MainLoopThread_PLOTTER = CurrentTime_MainLoopThread
                 ##########################################################################################################
             except:
@@ -948,7 +948,7 @@ if __name__ == '__main__':
 
         ##########################################################################################################
         ##########################################################################################################
-        time.sleep(0.002) ######## MUST HAVE AT LEAST A SMALL TIMEOUT OR ELSE THE MOTORS RUNS AWAY
+        time.sleep(0.005) ######## MUST HAVE AT LEAST A SMALL TIMEOUT OR ELSE THE MOTORS RUNS AWAY
         ##########################################################################################################
         ##########################################################################################################
 
