@@ -468,7 +468,7 @@ if __name__ == '__main__':
     USE_SINUSOIDAL_POS_CONTROL_INPUT_FLAG = 1 #unicorn
     
     global MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
-    MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode = 5.0
+    MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode = 6.5 #Limit is 7 for Resolution Divider = 1 in Multiturn mode.
     ##########################################################################################################
     ##########################################################################################################
     ##########################################################################################################
@@ -568,8 +568,6 @@ if __name__ == '__main__':
     global SINUSOIDAL_MOTION_INPUT_MaxValue_2
     SINUSOIDAL_MOTION_INPUT_MaxValue_2 = 360.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode
 
-    global SINUSOIDAL_MOTION_INPUT_MotorID_List
-    SINUSOIDAL_MOTION_INPUT_MotorID_List = [0, 1]
 
     ''' #Reuben Example with 1 AX + 1 MX motor
     MotorType_StringList = ["AX", "MX"]
@@ -582,6 +580,7 @@ if __name__ == '__main__':
     MaxTorque_DynamixelUnits_StartingValueList = [1023.0, 1023.0]
     CWlimit_StartingValueList = [0.0, 4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
     CCWlimit_StartingValueList = [1023.0, -4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]
+    SINUSOIDAL_MOTION_INPUT_MotorID_List = [0, 1]
     '''
 
     #''' #Example for 2 MX motors
@@ -596,6 +595,7 @@ if __name__ == '__main__':
     MaxTorque_DynamixelUnits_StartingValueList = [1023.0]*NumberOfMotors
     CWlimit_StartingValueList = [4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
     CCWlimit_StartingValueList = [-4095.0*MXseries_NumberOfRevolutionsPerDirectionInMultiturnMode]*NumberOfMotors
+    SINUSOIDAL_MOTION_INPUT_MotorID_List = range(0, NumberOfMotors)
     #'''
 
     ##########################################################################################################
@@ -936,7 +936,7 @@ if __name__ == '__main__':
 
                     if MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject_MostRecentDict_StandAlonePlottingProcess_ReadyForWritingFlag == 1:
                         if CurrentTime_MainLoopThread - LastTime_MainLoopThread_PLOTTER >= 0.030:
-                            MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject.ExternalAddPointOrListOfPointsToPlot(["Channel0"], [CurrentTime_MainLoopThread]*1, [DynamixelProtocol1AXorMXseries_MostRecentDict_PositionReceived_Degrees[1]])
+                            MyPlotterPureTkinterStandAloneProcess_ReubenPython2and3ClassObject.ExternalAddPointOrListOfPointsToPlot(["Channel0"], [CurrentTime_MainLoopThread]*1, [DynamixelProtocol1AXorMXseries_MostRecentDict_PositionReceived_Degrees[0]])
                             LastTime_MainLoopThread_PLOTTER = CurrentTime_MainLoopThread
                 ##########################################################################################################
             except:
